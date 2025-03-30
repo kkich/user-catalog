@@ -18,16 +18,4 @@ body {
   align-items: center;
   height: 100vh;
 }
-.user-list__link {
-  text-decoration: none;  
-  color: #2d9173;        
-  font-weight: 600;      
-  transition: color 0.3s;
-}
-.user-list__link:visited {
-  color: #2d9173;
-}
-.user-list__link:hover {
-  color: #257e62;
-}
 </style>

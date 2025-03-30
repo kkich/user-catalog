@@ -3,12 +3,17 @@
     <h1 class="user-list__title">Каталог пользователей</h1>
     <button @click="openModal" class="user-list__add-user">+ Добавить пользователя</button>
     <div class="user-list__filter">
-     <label for="searchType">Искать по:</label>
-     <select v-model="searchType" @change="updateSearchType" id="searchType" class="user-list__select">
-     <option value="name">Имени</option>
-      <option value="email">Email</option>
-      <option value="phone">Телефону</option>
-     </select>
+      <label for="searchType">Искать по:</label>
+      <select
+        v-model="searchType"
+        @change="updateSearchType"
+        id="searchType"
+        class="user-list__select"
+      >
+        <option value="name">Имени</option>
+        <option value="email">Email</option>
+        <option value="phone">Телефону</option>
+      </select>
     </div>
     <input
       type="text"
@@ -18,13 +23,18 @@
       class="user-list__search"
     />
     <ul class="user-list__items">
-      <li v-for="user in users" :key="user.id" class="user-list__item">
+      <li v-for="user in paginatedUsers" :key="user.id" class="user-list__item">
         <router-link :to="'/users/' + user.id" class="user-list__link">
           {{ user.name }}
         </router-link>
         <button @click="deleteUser(user.id)" class="user-list__delete">×</button>
       </li>
     </ul>
+    <UserPagination
+      :currentPage="currentPage"
+      :totalPages="totalPages"
+      @changePage="currentPage = $event"
+    />
     <div v-if="isModalOpen" class="modal">
       <div class="modal__content">
         <h2 class="modal__title">Добавить пользователя</h2>
@@ -41,64 +51,83 @@
 </template>
 
 <script>
-import { mapGetters, mapState } from 'vuex';
+import { mapGetters, mapState } from 'vuex'
+import UserPagination from '@/components/UserPagination.vue'
+
 export default {
+  components: {
+    UserPagination,
+  },
   data() {
     return {
       searchType: 'name',
-      isModalOpen: false,  
+      isModalOpen: false,
       newUserName: '',
       newUserEmail: '',
-      newUserPhone: ''
-    };
+      newUserPhone: '',
+      currentPage: 1,
+      perPage: 10,
+    }
   },
   computed: {
     ...mapState(['searchQuery', 'searchType']),
-    ...mapGetters(['filteredUsers']), 
+    ...mapGetters(['filteredUsers']),
+
     users() {
-      return this.filteredUsers;
-  }
+      return this.filteredUsers
+    },
+
+    totalPages() {
+      return Math.ceil(this.filteredUsers.length / this.perPage) || 1
+    },
+
+    paginatedUsers() {
+      const start = (this.currentPage - 1) * this.perPage
+      const end = start + this.perPage
+      return this.filteredUsers.slice(start, end)
+    },
   },
   methods: {
     updateSearchType(event) {
-      this.$store.commit('SET_SEARCH_TYPE', event.target.value);
+      this.$store.commit('setSearchType', event.target.value)
     },
     deleteUser(id) {
-      this.$store.commit('DELETE_USER', id);
+      this.$store.commit('deleteUser', id)
     },
     updateSearch(event) {
-      this.$store.commit('SET_SEARCH_QUERY', event.target.value);
+      this.$store.commit('setSearchQuery', event.target.value)
     },
     openModal() {
-      this.isModalOpen = true;
+      this.isModalOpen = true
     },
     closeModal() {
-      this.isModalOpen = false;
-      this.newUserName = '';
-      this.newUserEmail = '';
-      this.newUserPhone = '';
+      this.isModalOpen = false
+      this.newUserName = ''
+      this.newUserEmail = ''
+      this.newUserPhone = ''
     },
     addUser() {
       if (!this.newUserName.trim() || !this.newUserEmail.trim() || !this.newUserPhone.trim()) {
-        alert("Заполните все поля!");
-        return;
+        alert('Заполните все поля!')
+        return
       }
       const newUser = {
         id: Date.now(),
         name: this.newUserName,
         email: this.newUserEmail,
         phone: this.newUserPhone,
-      };
+      }
 
-      this.$store.commit('ADD_USER', newUser);
-      this.closeModal();
+      this.$store.commit('addUser', newUser)
+      this.closeModal()
     },
   },
   mounted() {
-    this.$store.dispatch('fetchUsers');
+    this.$store.dispatch('fetchUsers')
   },
-};
+}
 </script>
+
 <style>
 .user-list {
   max-width: 500px;
@@ -155,12 +184,12 @@ export default {
   color: #333;
 }
 .user-list__item {
-  font-family: 'Poppins', sans-serif; 
+  font-family: 'Poppins', sans-serif;
   font-size: 18px;
-  font-weight: 600; 
+  font-weight: 600;
   color: #333;
   display: flex;
-  justify-content: space-between; 
+  justify-content: space-between;
   align-items: center;
   padding: 10px;
   border-bottom: 1px solid #ddd;
@@ -179,18 +208,27 @@ export default {
 .user-list__delete:hover {
   background: darkred;
 }
+.user-list__link {
+  text-decoration: none;
+  color: #2d9173;
+  font-weight: 600;
+  transition: color 0.3s;
+}
+.user-list__link:visited {
+  color: #2d9173;
+}
+.user-list__link:hover {
+  color: #257e62;
+}
 /* --- модальное--- */
 .modal {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
-  max-width: 90%;
   height: 100%;
   background: rgba(0, 0, 0, 0.5);
   display: flex;
-  padding: 20px;
-  border-radius: 10px;
   justify-content: center;
   align-items: center;
   overflow: hidden;
@@ -220,7 +258,8 @@ export default {
   display: flex;
   justify-content: space-between;
 }
-.modal__save, .modal__cancel {
+.modal__save,
+.modal__cancel {
   padding: 10px;
   width: 48%;
   border: none;

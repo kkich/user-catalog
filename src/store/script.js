@@ -8,22 +8,22 @@ export default createStore({
     searchType: 'name',
   },
   mutations: {
-    SET_USERS(state, users) {
+    setUsers(state, users) {
       state.users = users;
       localStorage.setItem('users', JSON.stringify(users));
     },
-    ADD_USER(state, newUser) {
+    addUser(state, newUser) {
       state.users.push(newUser); 
       localStorage.setItem('users', JSON.stringify(state.users));
     },
-    DELETE_USER(state, userId) {
+    deleteUser(state, userId) {
       state.users = state.users.filter(user => user.id !== userId);
       localStorage.setItem('users', JSON.stringify(state.users));
     },
-    SET_SEARCH_QUERY(state, query) {
+    setSearchQuery(state, query) {
       state.searchQuery = query;
     },
-    SET_SEARCH_TYPE(state, type) {  
+    setSearchType(state, type) {  
         state.searchType = type;
     }
   },
@@ -33,10 +33,10 @@ export default createStore({
         const savedUsers = localStorage.getItem('users');
         
         if (savedUsers) {
-          commit('SET_USERS', JSON.parse(savedUsers));
+          commit('setUsers', JSON.parse(savedUsers));
         } else {
           const response = await axios.get('https://jsonplaceholder.typicode.com/users');
-          commit('SET_USERS', response.data);
+          commit('setUsers', response.data);
         }
       } catch (error) {
         console.error('Ошибка загрузки пользователей:', error);
